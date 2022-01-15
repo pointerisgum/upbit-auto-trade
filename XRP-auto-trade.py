@@ -67,37 +67,38 @@ def predict_price(ticker):
         closeDf = forecast[forecast['ds'] == data.iloc[-1]['ds'].replace(hour=9)]
     closeValue = closeDf['yhat'].values[0]
     predicted_close_price = closeValue
-predict_price("KRW-BTC")
-schedule.every().hour.do(lambda: predict_price("KRW-BTC"))
+predict_price("KRW-XRP")
+schedule.every().hour.do(lambda: predict_price("KRW-XRP"))
 
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
 print("autotrade start")
-
 # 시작 메세지 슬랙 전송
 post_message(slackToken,"#stock", "프로그램 시작")
+print(get_balance("KRW"))
+
 
 while True:
     try:
         now = datetime.datetime.now()
-        start_time = get_start_time("KRW-BTC")
+        start_time = get_start_time("KRW-XRP")
         end_time = start_time + datetime.timedelta(days=1)
 
-        if start_time < now < end_time - datetime.timedelta(seconds=60*60+15):
-            target_price = get_target_price("KRW-BTC", 0.5)
-            ma15 = get_ma15("KRW-BTC")
-            current_price = get_current_price("KRW-BTC")
+        if start_time < now < end_time - datetime.timedelta(seconds=60*15):    #장 마감 15분전에 팔기 (다른 프로그램과 중복 될 확률이 있어 피하기 위함)
+            target_price = get_target_price("KRW-XRP", 0.5)
+            ma15 = get_ma15("KRW-XRP")
+            current_price = get_current_price("KRW-XRP")
             if target_price < current_price and ma15 < current_price and current_price < predicted_close_price:
                 krw = get_balance("KRW")
                 if krw > 5000:
-                    buy_result = upbit.buy_market_order("KRW-BTC", krw*0.9995)
-                    post_message(slackToken,"#stock", "BTC buy : " +str(buy_result))
+                    buy_result = upbit.buy_market_order("KRW-XRP", krw*0.9995)
+                    post_message(slackToken,"#stock", "XRP buy : " +str(buy_result))
         else:
-            btc = get_balance("BTC")
-            if btc > 0.00008:
-                sell_result = upbit.sell_market_order("KRW-BTC", btc*0.9995)
-                post_message(slackToken,"#stock", "BTC buy : " +str(sell_result))
+            xrp = get_balance("XRP")
+            if xrp > 0.00008:
+                sell_result = upbit.sell_market_order("KRW-XRP", xrp*0.9995)
+                post_message(slackToken,"#stock", "XRP buy : " +str(sell_result))
         time.sleep(1)
     except Exception as e:
         print(e)
