@@ -78,6 +78,10 @@ print("autotrade start")
 # 시작 메세지 슬랙 전송
 post_message(slackToken,"#stock", "프로그램 시작")
 
+current_btc_price = get_current_price("KRW-BTC")
+print(current_btc_price)
+print(1200 / current_btc_price)
+
 while True:
     try:
         now = datetime.datetime.now()
@@ -94,12 +98,16 @@ while True:
                     buy_result = upbit.buy_market_order("KRW-BTC", krw*0.9995)
                     post_message(slackToken,"#stock", "BTC buy : " +str(buy_result))
         else:
+            current_btc_price = get_current_price("KRW-BTC")
+            print(current_btc_price)
             btc = get_balance("BTC")
-            if btc > 0.00008:
-                sell_result = upbit.sell_market_order("KRW-BTC", btc*0.9995)
-                post_message(slackToken,"#stock", "BTC buy : " +str(sell_result))
+            # if btc > 0.00008:
+            # if btc > (7000/current_btc_price):
+            sell_result = upbit.sell_market_order("KRW-BTC", btc*0.9995)
+            post_message(slackToken,"#stock", "BTC buy : " +str(sell_result))
         time.sleep(1)
     except Exception as e:
         print(e)
         post_message(slackToken,"#stock", e)
         time.sleep(1)
+#test1
