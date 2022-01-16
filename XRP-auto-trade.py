@@ -104,3 +104,4 @@ while True:
         print(e)
         post_message(slackToken,"#stock", e)
         time.sleep(1)
+#??
