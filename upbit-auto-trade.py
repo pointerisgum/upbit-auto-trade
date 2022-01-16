@@ -78,10 +78,6 @@ print("autotrade start")
 # 시작 메세지 슬랙 전송
 post_message(slackToken,"#stock", "프로그램 시작")
 
-current_btc_price = get_current_price("KRW-BTC")
-print(current_btc_price)
-print(1200 / current_btc_price)
-
 while True:
     try:
         now = datetime.datetime.now()
