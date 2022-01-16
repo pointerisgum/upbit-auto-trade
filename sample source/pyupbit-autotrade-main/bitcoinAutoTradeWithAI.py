@@ -1,20 +1,11 @@
 import time
 import pyupbit
 import datetime
-import requests
 import schedule
 from fbprophet import Prophet
 
-access = "xwdEMciw0PeGRfpA8xMaVtnVGmFPFxTR6dkKCnUQ"
-secret = "UOxwdGYVZflyTCbMwrlrzB0Ey44GGxSLl70xp8A4"
-slackToken = "xoxb-2958422443234-2961015128436-Zj5X6j6Ez5jyWYIIHaCJMyM2"
-
-def post_message(token, channel, text):
-    """슬랙 메시지 전송"""
-    response = requests.post("https://slack.com/api/chat.postMessage",
-        headers={"Authorization": "Bearer "+token},
-        data={"channel": channel,"text": text}
-    )
+access = "your-access"
+secret = "your-secret"
 
 def get_target_price(ticker, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
@@ -27,12 +18,6 @@ def get_start_time(ticker):
     df = pyupbit.get_ohlcv(ticker, interval="day", count=1)
     start_time = df.index[0]
     return start_time
-
-def get_ma15(ticker):
-    """15일 이동 평균선 조회"""
-    df = pyupbit.get_ohlcv(ticker, interval="day", count=15)
-    ma15 = df['close'].rolling(15).mean().iloc[-1]
-    return ma15
 
 def get_balance(ticker):
     """잔고 조회"""
@@ -67,40 +52,33 @@ def predict_price(ticker):
         closeDf = forecast[forecast['ds'] == data.iloc[-1]['ds'].replace(hour=9)]
     closeValue = closeDf['yhat'].values[0]
     predicted_close_price = closeValue
-predict_price("KRW-XRP")
-schedule.every().hour.do(lambda: predict_price("KRW-XRP"))
-
+predict_price("KRW-BTC")
+schedule.every().hour.do(lambda: predict_price("KRW-BTC"))
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
 print("autotrade start")
-# 시작 메세지 슬랙 전송
-post_message(slackToken,"#stock", "프로그램 시작")
-print(get_balance("KRW"))
 
-
+# 자동매매 시작
 while True:
     try:
         now = datetime.datetime.now()
-        start_time = get_start_time("KRW-XRP")
+        start_time = get_start_time("KRW-BTC")
         end_time = start_time + datetime.timedelta(days=1)
+        schedule.run_pending()
 
-        if start_time < now < end_time - datetime.timedelta(seconds=60*15):    #장 마감 15분전에 팔기 (다른 프로그램과 중복 될 확률이 있어 피하기 위함)
-            target_price = get_target_price("KRW-XRP", 0.5)
-            ma15 = get_ma15("KRW-XRP")
-            current_price = get_current_price("KRW-XRP")
-            if target_price < current_price and ma15 < current_price and current_price < predicted_close_price:
+        if start_time < now < end_time - datetime.timedelta(seconds=10):
+            target_price = get_target_price("KRW-BTC", 0.5)
+            current_price = get_current_price("KRW-BTC")
+            if target_price < current_price and current_price < predicted_close_price:
                 krw = get_balance("KRW")
                 if krw > 5000:
-                    buy_result = upbit.buy_market_order("KRW-XRP", krw*0.9995)
-                    post_message(slackToken,"#stock", "XRP buy : " +str(buy_result))
+                    upbit.buy_market_order("KRW-BTC", krw*0.9995)
         else:
-            xrp = get_balance("XRP")
-            if xrp > 0.00008:
-                sell_result = upbit.sell_market_order("KRW-XRP", xrp*0.9995)
-                post_message(slackToken,"#stock", "XRP buy : " +str(sell_result))
+            btc = get_balance("BTC")
+            if btc > 0.00008:
+                upbit.sell_market_order("KRW-BTC", btc*0.9995)
         time.sleep(1)
     except Exception as e:
         print(e)
-        post_message(slackToken,"#stock", e)
         time.sleep(1)
