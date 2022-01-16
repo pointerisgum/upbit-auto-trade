@@ -96,9 +96,9 @@ while True:
                     post_message(slackToken,"#stock", "XRP buy : " +str(buy_result))
         else:
             xrp = get_balance("XRP")
-            if xrp > 0.00008:
-                sell_result = upbit.sell_market_order("KRW-XRP", xrp*0.9995)
-                post_message(slackToken,"#stock", "XRP buy : " +str(sell_result))
+            # if xrp > 0.00008:
+            sell_result = upbit.sell_market_order("KRW-XRP", xrp*0.9995)
+            post_message(slackToken,"#stock", "XRP buy : " +str(sell_result))
         time.sleep(1)
     except Exception as e:
         print(e)
