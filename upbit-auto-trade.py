@@ -7,7 +7,7 @@ from fbprophet import Prophet
 
 access = "xwdEMciw0PeGRfpA8xMaVtnVGmFPFxTR6dkKCnUQ"
 secret = "UOxwdGYVZflyTCbMwrlrzB0Ey44GGxSLl70xp8A4"
-slackToken = "xoxb-2958422443234-2961015128436-273nJ1B5h2uuwSYQInCEuj65"
+slackToken = "xoxb-2958422443234-2961015128436-MtaZd7sEkDthFMwkgme2fSNr"
 
 def post_message(token, channel, text):
     """슬랙 메시지 전송"""
@@ -84,7 +84,7 @@ while True:
         start_time = get_start_time("KRW-BTC")
         end_time = start_time + datetime.timedelta(days=1)
 
-        if start_time < now < end_time - datetime.timedelta(seconds=60*60+15):
+        if start_time < now < end_time - datetime.timedelta(seconds=30):
             target_price = get_target_price("KRW-BTC", 0.5)
             ma15 = get_ma15("KRW-BTC")
             current_price = get_current_price("KRW-BTC")
