@@ -7,7 +7,7 @@ from fbprophet import Prophet
 
 access = "xwdEMciw0PeGRfpA8xMaVtnVGmFPFxTR6dkKCnUQ"
 secret = "UOxwdGYVZflyTCbMwrlrzB0Ey44GGxSLl70xp8A4"
-slackToken = "xoxb-2958422443234-2961015128436-L9TD8yIyn9gRbuwsm9bbQLBU"
+slackToken = "xoxb-2958422443234-2961015128436-OlEZV7qGyaamz31X3slydehR"
 
 buyTicker = ""
 target_price = ""
