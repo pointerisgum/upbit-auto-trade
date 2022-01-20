@@ -4,7 +4,7 @@ import datetime
 import requests
 import schedule
 from fbprophet import Prophet
-
+import upbit_api
 
 access = "xwdEMciw0PeGRfpA8xMaVtnVGmFPFxTR6dkKCnUQ"
 secret = "UOxwdGYVZflyTCbMwrlrzB0Ey44GGxSLl70xp8A4"
@@ -13,6 +13,9 @@ slackToken = "xoxb-2958422443234-2961015128436-OlEZV7qGyaamz31X3slydehR"
 buyTicker = ""
 target_price = ""
 k = 0.5
+
+# data = upbit_api.get_candle("KRW-BTC", "1", 100)
+# print(upbit_api.get_rsi(data))
 
 def post_message(token, channel, text):
     """슬랙 메시지 전송"""
@@ -135,15 +138,15 @@ while True:
                 print("조건에 만족하는 타겟티커:", target_ticker)
                 target_price = get_target_price(target_ticker, k)
                 current_price = get_current_price(target_ticker)
-                ma15 = get_ma15(target_ticker)
+                # ma15 = get_ma15(target_ticker)
             
                 print("현재 금액 : ", current_price)
                 print("마감 예상 금액 : ", predicted_close_price)
                 
-                if ma15 >= current_price:
-                    print("15일 이평선을 만족하지 못하여 구매하지 않음")
-                    tickers.remove(target_ticker)
-                elif current_price >= predicted_close_price:
+                # if ma15 >= current_price:
+                #     print("15일 이평선을 만족하지 못하여 구매하지 않음")
+                #     tickers.remove(target_ticker)
+                if current_price >= predicted_close_price:
                     print("AI가 분석한 결과 종가가 현재가보다 작을 것으로 예상 되어 구매하지 않음")
                     tickers.remove(target_ticker)
                 else:
