@@ -5,6 +5,7 @@ import requests
 import schedule
 from fbprophet import Prophet
 
+
 access = "xwdEMciw0PeGRfpA8xMaVtnVGmFPFxTR6dkKCnUQ"
 secret = "UOxwdGYVZflyTCbMwrlrzB0Ey44GGxSLl70xp8A4"
 slackToken = "xoxb-2958422443234-2961015128436-OlEZV7qGyaamz31X3slydehR"
@@ -160,15 +161,16 @@ while True:
             # if buyTicker.length() > 0:
                 current_btc_price = get_current_price(buyTicker)
                 print(current_btc_price)
-                balance_name = target_ticker.replace("KRW-", "")
+                balance_name = buyTicker.replace("KRW-", "")
                 print("balance:", balance_name)
                 balance = get_balance(balance_name)
                 # btc = get_balance("BTC")
                 # if btc > 0.00008:
                 # if btc > (7000/current_btc_price):
-                sell_result = upbit.sell_market_order(target_ticker, balance*0.9995)
+                sell_result = upbit.sell_market_order(buyTicker, balance*0.9995)
                 buyTicker = ""
                 post_message(slackToken, "#stock", "sell : " +str(sell_result))
+                initTickers()
         time.sleep(1)
     except Exception as e:
         print(e)
