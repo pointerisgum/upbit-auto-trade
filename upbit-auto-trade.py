@@ -14,6 +14,7 @@ buyTicker = ""
 target_price = ""
 k = 0.5
 
+
 # data = upbit_api.get_candle("KRW-BTC", "1", 100)
 # print(upbit_api.get_rsi(data))
 
@@ -76,6 +77,9 @@ def predict_price(ticker):
     closeValue = closeDf['yhat'].values[0]
     predicted_close_price = closeValue
     
+# predict_price("KRW-BTC")
+# print(predicted_close_price)
+
 # if len(target_price) > 0:
 #     predict_price(target_price)
 #     schedule.every().hour.do(lambda: predict_price(target_price))
@@ -119,6 +123,8 @@ print("autotrade start")
 post_message(slackToken,"#stock", "프로그램 시작")
 
 
+
+
 while True:
     try:
         now = datetime.datetime.now()
@@ -146,17 +152,18 @@ while True:
                 # if ma15 >= current_price:
                 #     print("15일 이평선을 만족하지 못하여 구매하지 않음")
                 #     tickers.remove(target_ticker)
-                if current_price >= predicted_close_price:
-                    print("AI가 분석한 결과 종가가 현재가보다 작을 것으로 예상 되어 구매하지 않음")
-                    tickers.remove(target_ticker)
-                else:
-                    krw = get_balance("KRW")
-                    if krw > 5000:
-                        # buy_result = upbit.buy_market_order(target_ticker, krw*0.9995)
-                        buy_result = upbit.buy_market_order(target_ticker, 5500*0.9995)    #테스트용으로 만원어치만 삼
-                        buyTicker = target_ticker
-                        post_message(slackToken, "#stock", "buy : " +str(buy_result))
-                        print(buyTicker, "구매성공")
+                # if current_price >= predicted_close_price:
+                #     print("AI가 분석한 결과 종가가 현재가보다 작을 것으로 예상 되어 구매하지 않음")
+                #     tickers.remove(target_ticker)
+                # else:
+                krw = get_balance("KRW")
+                if krw > 5100:
+                    # buy_result = upbit.buy_market_order(target_ticker, krw*0.9995)
+                    # buy_result = upbit.buy_market_order(target_ticker, 5500*0.9995)    #테스트용으로 만원어치만 삼
+                    buy_result = upbit.buy_market_order(target_ticker, 5000)    #테스트용으로 오천원 삼
+                    buyTicker = target_ticker
+                    post_message(slackToken, "#stock", "buy : " +str(buy_result))
+                    print(buyTicker, "구매성공")
             else:
                 print("조건에 만족하는 티커 없음")
         else:
@@ -170,7 +177,8 @@ while True:
                 # btc = get_balance("BTC")
                 # if btc > 0.00008:
                 # if btc > (7000/current_btc_price):
-                sell_result = upbit.sell_market_order(buyTicker, balance*0.9995)
+                # sell_result = upbit.sell_market_order(buyTicker, balance*0.9995)
+                sell_result = upbit.sell_market_order(buyTicker, balance)
                 buyTicker = ""
                 post_message(slackToken, "#stock", "sell : " +str(sell_result))
                 initTickers()
@@ -180,3 +188,4 @@ while True:
         post_message(slackToken, "#stock", e)
         time.sleep(1)
 #test1
+#AI 뺀 버전, 단순히 래리만 계산 함
