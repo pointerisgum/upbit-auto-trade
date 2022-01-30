@@ -5,25 +5,28 @@ import requests
 import schedule
 from fbprophet import Prophet
 import upbit_api
+import telegram
 
 access = "xwdEMciw0PeGRfpA8xMaVtnVGmFPFxTR6dkKCnUQ"
 secret = "UOxwdGYVZflyTCbMwrlrzB0Ey44GGxSLl70xp8A4"
 slackToken = "xoxb-2958422443234-2961015128436-OlEZV7qGyaamz31X3slydehR"
+teleToken = "5119673382:AAFycuAZdNXaVpihhQt_wR_k_ruLste2YkQ"
 
 buyTicker = ""
 target_price = ""
 k = 0.5
 
+bot = telegram.Bot(token=teleToken)
+# updates = bot.getUpdates()
+# for u in updates:
+#     print(u.message['chat']['id'])
 
 # data = upbit_api.get_candle("KRW-BTC", "1", 100)
 # print(upbit_api.get_rsi(data))
 
-def post_message(token, channel, text):
+def post_message(msg):
     """슬랙 메시지 전송"""
-    response = requests.post("https://slack.com/api/chat.postMessage",
-        headers={"Authorization": "Bearer "+token},
-        data={"channel": channel,"text": text}
-    )
+    bot.sendMessage(chat_id="-569819125", text=msg)
 
 def get_target_price(ticker, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
@@ -120,7 +123,7 @@ upbit = pyupbit.Upbit(access, secret)
 print("autotrade start")
 
 # 시작 메세지 슬랙 전송
-post_message(slackToken,"#stock", "프로그램 시작")
+post_message("프로그램 시작")
 
 
 
@@ -162,7 +165,7 @@ while True:
                     # buy_result = upbit.buy_market_order(target_ticker, 5500*0.9995)    #테스트용으로 만원어치만 삼
                     buy_result = upbit.buy_market_order(target_ticker, 5000)    #테스트용으로 오천원 삼
                     buyTicker = target_ticker
-                    post_message(slackToken, "#stock", "buy : " +str(buy_result))
+                    post_message("buy : " +str(buy_result))
                     print(buyTicker, "구매성공")
             else:
                 print("조건에 만족하는 티커 없음")
@@ -180,12 +183,12 @@ while True:
                 # sell_result = upbit.sell_market_order(buyTicker, balance*0.9995)
                 sell_result = upbit.sell_market_order(buyTicker, balance)
                 buyTicker = ""
-                post_message(slackToken, "#stock", "sell : " +str(sell_result))
+                post_message("sell : " +str(sell_result))
                 initTickers()
         time.sleep(1)
     except Exception as e:
         print(e)
-        post_message(slackToken, "#stock", e)
+        post_message(e)
         time.sleep(1)
 #test1
 #AI 뺀 버전, 단순히 래리만 계산 함
