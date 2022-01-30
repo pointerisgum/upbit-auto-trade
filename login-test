@@ -1,0 +1,9 @@
+from tkinter import *
+from tkinter import messagebox
+
+w = Tk()
+w.geometry('350x500')
+w.title('변동성 돌파 전략')
+w.resizable(0, 0)
+
+w.mainloop()
