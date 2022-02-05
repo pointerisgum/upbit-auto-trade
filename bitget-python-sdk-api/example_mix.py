@@ -5,22 +5,118 @@ import bitget.mix.order_api as order
 import bitget.mix.plan_api as plan
 import bitget.mix.trace_api as trace
 import json
+import time
+import datetime
+import datetime as pydatetime
+import pandas as pd
+import telegram
+
+
+import logging
+import requests
+import jwt
+import uuid
+import hashlib
+import math
+import os
+import pandas as pd
+import numpy
+ 
+from urllib.parse import urlencode
+from decimal import Decimal
+
+
+def get_cci(candle_data, loop_cnt):
+    try:
+ 
+        # CCI 데이터 리턴용
+        cci_list = []
+ 
+        # 오름차순 정렬
+        for i in range(0, len(candle_data)):
+            candle_data[i][0] = float(candle_data[i][0])
+            candle_data[i][1] = float(candle_data[i][1])
+            candle_data[i][2] = float(candle_data[i][2])
+            candle_data[i][3] = float(candle_data[i][3])
+            candle_data[i][4] = float(candle_data[i][4])
+            
+        ordered_df = pd.DataFrame(candle_data)
+
+        # 계산식 : (Typical Price - Simple Moving Average) / (0.015 * Mean absolute Deviation)
+        ordered_df['TP'] = (ordered_df[2] + ordered_df[3] + ordered_df[4]) / 3
+        ordered_df['SMA'] = ordered_df['TP'].rolling(window=7).mean()
+        ordered_df['MAD'] = ordered_df['TP'].rolling(window=7).apply(lambda x: pd.Series(x).mad())
+        ordered_df['CCI'] = (ordered_df['TP'] - ordered_df['SMA']) / (0.015 * ordered_df['MAD'])
+ 
+        # 개수만큼 조립
+        for i in range(0, loop_cnt):            
+            cci_list.append({"type": "CCI", "DT": ordered_df[0].loc[i], "CCI": round(ordered_df['CCI'].loc[i], 4)})
+ 
+        return cci_list
+ 
+    # ----------------------------------------
+    # 모든 함수의 공통 부분(Exception 처리)
+    # ----------------------------------------
+    except Exception:
+        raise
 
 if __name__ == '__main__':
     api_key = "bg_e34e157d2931026fd97d6b78f6980dd2"
     secret_key = "7a7aef9dee5a9aef14fbc5eacd3159615c7c9179d92e90a6043b14da9f74467c"
-    passphrase = "bitget_auto"  # 口令
-
+    passphrase = "bitget_auto"
+    teleToken = "5225100528:AAGL0OC4m40gsMkB9haFGm0weJMUSKGqY2U"
+    bot = telegram.Bot(token=teleToken)
+    isGold = False
+    isDead = False
+    
     symbol = 'BTCUSDT_UMCBL'
 
     marketApi = market.MarketApi(api_key, secret_key, passphrase, use_server_time=False, first=False)
-    
-    while TRUE:
-        result = marketApi.candles(symbol, granularity=900,startTime=1641220178000, endTime=1643900578000)
-        print(result)
+
+    while True:
+        endTime = int(pydatetime.datetime.now().timestamp())
+
+        # print(result)
+            # time.sleep(0.3)
+
+        # result = marketApi.tickers('umcbl') #COIN 선물
+        # print(result)
+        
+        
+        result = marketApi.candles(symbol, granularity=900,startTime=(endTime * 1000) - (900000*200), endTime=endTime * 1000) #15분봉 200개
+        cci_data = get_cci(result, 100)
+        cci = cci_data[-1]['CCI']
+        print('cci: ', cci)
+        
+        if len(result) > 0:
+            df = pd.DataFrame(result)
+            df=df[4].iloc[::1] #4번째가 종가임
+            
+            ma10 = df.rolling(window=10).mean()
+            ma30 = df.rolling(window=30).mean()
+            print(ma10.iloc[-2])
+            print(ma30.iloc[-2])
+            line10 = ma10.iloc[-2] - ma30.iloc[-2]
+            line30 = ma10.iloc[-1] - ma30.iloc[-1]
+            
+            if line10 < 0 and line30 > 0 and isGold == False:
+                msg = pydatetime.datetime.now().timestamp(), 'bitget BTC golden cross'
+                bot.sendMessage(chat_id="-796323955", text=msg)
+                print(pydatetime.datetime.now().timestamp(), 'golden cross')
+                isGold = True
+                isDead = False
+                
+                
+            if line10 > 0 and line30 < 0 and isDead == False:
+                msg = pydatetime.datetime.now().timestamp(), 'bitget BTC dead cross'
+                bot.sendMessage(chat_id="-796323955", text=msg)
+                print(pydatetime.datetime.now().timestamp(), 'dead croos')
+                isGold = False
+                isDead = True
+            
         time.sleep(1)
 
-    
+
     
     
     
